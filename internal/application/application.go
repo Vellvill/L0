@@ -2,6 +2,7 @@ package application
 
 import (
 	"L0/internal/config"
+	"L0/internal/service"
 	"L0/internal/usecases"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -21,7 +22,7 @@ func NewApplication(config *config.Config, pool *pgxpool.Pool, repo *usecases.Re
 		config:     config,
 		router:     NewRouter(),
 		connection: pool,
-		repository: repo,
+		repository: service.New(repo),
 	}
 	return a, nil
 }
