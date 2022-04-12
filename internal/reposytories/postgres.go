@@ -20,7 +20,7 @@ func NewPostgreshRepository(pool *pgxpool.Pool) (usecases.Repository, error) {
 	return repo, nil
 }
 
-func (r *repositoryPostgres) AddModel(ctx context.Context, model *model.Model) error {
+func (r *repositoryPostgres) AddModel(ctx context.Context, model *model.Model, uuid string) error {
 
 	q := `
 	INSERT INTO models
@@ -39,4 +39,5 @@ func (r *repositoryPostgres) AddModel(ctx context.Context, model *model.Model) e
 			return err
 		}
 	}
+	return nil
 }

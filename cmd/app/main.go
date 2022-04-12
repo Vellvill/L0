@@ -1,10 +1,10 @@
 package main
 
 import (
+	"L0/internal/application"
 	"L0/internal/config"
 	"L0/internal/postgres"
 	"context"
-	"fmt"
 	"log"
 )
 
@@ -20,5 +20,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(connect)
+	app, err := application.NewApplication(config, connect)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = app.Start()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }

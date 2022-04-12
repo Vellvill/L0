@@ -19,6 +19,6 @@ func NewHashRepository() (usecases.Repository, error) {
 	return repo, nil
 }
 
-func (r *repositoryHash) AddModel(ctx context.Context, model *model.Model) error {
-
+func (r *repositoryHash) AddModel(ctx context.Context, model *model.Model, uuid string) error {
+	return nil
 }

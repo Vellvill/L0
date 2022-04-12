@@ -6,5 +6,5 @@ import (
 )
 
 type Repository interface {
-	AddModel(ctx context.Context, model *model.Model) error
+	AddModel(ctx context.Context, model *model.Model, uuid string) error
 }
