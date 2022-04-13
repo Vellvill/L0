@@ -24,7 +24,7 @@ type Hash struct {
 
 var Once sync.Once
 
-func NewPostgreshRepository(client *pgxpool.Pool) (usecases.Repository, error) {
+func NewRepository(client *pgxpool.Pool) (usecases.Repository, error) {
 	repo := &repositoryPostgres{
 		client: client,
 		Hash: struct {

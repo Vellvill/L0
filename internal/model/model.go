@@ -1,6 +1,10 @@
 package model
 
-import "time"
+import (
+	"encoding/json"
+	"log"
+	"time"
+)
 
 type Model struct {
 	OrderUID string
@@ -10,8 +14,8 @@ type Model struct {
 		Entry       string `json:"entry"`
 		Delivery    struct {
 			Name    string `json:"name"`
-			Phone   string `json:"phone"`
-			Zip     string `json:"zip"`
+			Phone   int64  `json:"phone"`
+			Zip     int    `json:"zip"`
 			City    string `json:"city"`
 			Address string `json:"address"`
 			Region  string `json:"region"`
@@ -36,7 +40,7 @@ type Model struct {
 			Rid         string `json:"rid"`
 			Name        string `json:"name"`
 			Sale        int    `json:"sale"`
-			Size        string `json:"size"`
+			Size        int    `json:"size"`
 			TotalPrice  int    `json:"total_price"`
 			NmID        int    `json:"nm_id"`
 			Brand       string `json:"brand"`
@@ -46,13 +50,18 @@ type Model struct {
 		InternalSignature string    `json:"internal_signature"`
 		CustomerID        string    `json:"customer_id"`
 		DeliveryService   string    `json:"delivery_service"`
-		Shardkey          string    `json:"shardkey"`
+		Shardkey          int       `json:"shardkey"`
 		SmID              int       `json:"sm_id"`
 		DateCreated       time.Time `json:"date_created"`
-		OofShard          string    `json:"oof_shard"`
+		OofShard          int       `json:"oof_shard"`
 	}
 }
 
-func NewModel() *Model {
-	return &Model{}
+func NewModel(js []byte) *Model {
+	var model Model
+	err := json.Unmarshal(js, &model.Json)
+	if err != nil {
+		log.Println(err)
+	}
+	return &Model{model.Json.OrderUID, model.Json}
 }

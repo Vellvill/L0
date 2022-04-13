@@ -2,11 +2,11 @@ package application
 
 import (
 	"L0/internal/config"
-	"L0/internal/service"
 	"L0/internal/usecases"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/nats-io/stan.go"
 	"net/http"
 )
 
@@ -14,20 +14,21 @@ type Application struct {
 	config     *config.Config
 	router     *mux.Router
 	connection *pgxpool.Pool
-	repository *usecases.Repository
+	repository usecases.Repository
 }
 
-func NewApplication(config *config.Config, pool *pgxpool.Pool, repo *usecases.Repository) (*Application, error) {
+func NewApplication(config *config.Config, pool *pgxpool.Pool, repo usecases.Repository) (*Application, error) {
 	a := &Application{
 		config:     config,
 		router:     NewRouter(),
 		connection: pool,
-		repository: service.New(repo),
+		repository: repo,
 	}
 	return a, nil
 }
 
 func (a *Application) Start() error {
+	stan.Connect("prod", "application")
 	return http.ListenAndServe(fmt.Sprintf(":%s", a.config.Server.Port), a.router)
 }
 

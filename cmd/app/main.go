@@ -4,6 +4,7 @@ import (
 	"L0/internal/application"
 	"L0/internal/config"
 	"L0/internal/postgres"
+	"L0/internal/reposytories"
 	"context"
 	"log"
 )
@@ -20,7 +21,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	app, err := application.NewApplication(config, connect)
+	repo, err := reposytories.NewRepository(connect)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	app, err := application.NewApplication(config, connect, repo)
 	if err != nil {
 		log.Fatal(err)
 	}
