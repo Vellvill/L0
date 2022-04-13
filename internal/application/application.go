@@ -12,6 +12,7 @@ import (
 	"github.com/nats-io/stan.go"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -56,7 +57,10 @@ func (a *Application) Start(ctx context.Context) error {
 	update := make(chan *model.Model)
 
 	var _, er = sc.Subscribe(a.config.Nats.Channel, func(m *stan.Msg) {
-		js := model.NewModel(m.Data)
+		js, err := model.NewModel(m.Data)
+		if err != nil {
+			return
+		}
 		update <- js
 	})
 	if er != nil {
@@ -76,7 +80,8 @@ func (a *Application) Start(ctx context.Context) error {
 			}
 		}
 	}()
-
+	defer a.connection.Close()
+	defer sc.Close()
 	return http.ListenAndServe(fmt.Sprintf(":%s", a.config.Server.Port), a.router)
 }
 
@@ -87,5 +92,15 @@ func (a *Application) NewRouter() {
 }
 
 func (a *Application) FindById(w http.ResponseWriter, r *http.Request) {
+	uuid := strings.Trim(r.URL.Path, "/")
+	data, err := a.repository.FindInHash(uuid)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		log.Println(err)
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data)
 
 }

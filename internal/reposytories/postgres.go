@@ -46,6 +46,12 @@ func (r *repositoryPostgres) AddModel(ctx context.Context, model *model.Model, u
 			return err
 		}
 	}
+
+	err = r.Hash.AddModelHash(*model)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -74,7 +80,10 @@ func (r *repositoryPostgres) UpdateHash(ctx context.Context) (err error) {
 		array = append(array, models)
 	}
 
-	r.Hash.UpdateHash(array)
+	err = r.Hash.UpdateHash(array)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

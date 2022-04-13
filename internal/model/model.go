@@ -2,66 +2,85 @@ package model
 
 import (
 	"encoding/json"
-	"log"
+	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/go-ozzo/ozzo-validation/is"
 	"time"
 )
 
 type Model struct {
 	OrderUID string
 	Json     struct {
-		OrderUID    string `json:"order_uid"`
-		TrackNumber string `json:"track_number"`
-		Entry       string `json:"entry"`
+		OrderUID    string `json:"order_uid" validate:"required"`
+		TrackNumber string `json:"track_number" validate:"required"`
+		Entry       string `json:"entry" validate:"required"`
 		Delivery    struct {
-			Name    string `json:"name"`
-			Phone   int64  `json:"phone"`
-			Zip     int    `json:"zip"`
-			City    string `json:"city"`
-			Address string `json:"address"`
-			Region  string `json:"region"`
-			Email   string `json:"email"`
-		} `json:"delivery"`
+			Name    string `json:"name" validate:"required"`
+			Phone   string `json:"phone" validate:"required"`
+			Zip     string `json:"zip" validate:"required"`
+			City    string `json:"city" validate:"required"`
+			Address string `json:"address" validate:"required"`
+			Region  string `json:"region" validate:"required"`
+			Email   string `json:"email" validate:"required"`
+		} `json:"delivery" validate:"required"`
 		Payment struct {
-			Transaction  string `json:"transaction"`
-			RequestID    string `json:"request_id"`
-			Currency     string `json:"currency"`
-			Provider     string `json:"provider"`
-			Amount       int    `json:"amount"`
-			PaymentDt    int    `json:"payment_dt"`
-			Bank         string `json:"bank"`
-			DeliveryCost int    `json:"delivery_cost"`
-			GoodsTotal   int    `json:"goods_total"`
-			CustomFee    int    `json:"custom_fee"`
-		} `json:"payment"`
+			Transaction  string `json:"transaction" validate:"required"`
+			RequestID    string `json:"request_id" validate:"required"`
+			Currency     string `json:"currency" validate:"required"`
+			Provider     string `json:"provider" validate:"required"`
+			Amount       int    `json:"amount" validate:"required,numeric"`
+			PaymentDt    int    `json:"payment_dt" validate:"required"`
+			Bank         string `json:"bank" validate:"required"`
+			DeliveryCost int    `json:"delivery_cost" validate:"required"`
+			GoodsTotal   int    `json:"goods_total" validate:"required,numeric"`
+			CustomFee    int    `json:"custom_fee" validate:"required,numeric"`
+		} `json:"payment" validate:"required"`
 		Items []struct {
-			ChrtID      int    `json:"chrt_id"`
-			TrackNumber string `json:"track_number"`
-			Price       int    `json:"price"`
-			Rid         string `json:"rid"`
-			Name        string `json:"name"`
-			Sale        int    `json:"sale"`
-			Size        int    `json:"size"`
-			TotalPrice  int    `json:"total_price"`
-			NmID        int    `json:"nm_id"`
-			Brand       string `json:"brand"`
-			Status      int    `json:"status"`
-		} `json:"items"`
-		Locale            string    `json:"locale"`
-		InternalSignature string    `json:"internal_signature"`
-		CustomerID        string    `json:"customer_id"`
-		DeliveryService   string    `json:"delivery_service"`
-		Shardkey          int       `json:"shardkey"`
-		SmID              int       `json:"sm_id"`
-		DateCreated       time.Time `json:"date_created"`
-		OofShard          int       `json:"oof_shard"`
+			ChrtID      int    `json:"chrt_id" validate:"required"`
+			TrackNumber string `json:"track_number" validate:"required"`
+			Price       int    `json:"price" validate:"required"`
+			Rid         string `json:"rid" validate:"required"`
+			Name        string `json:"name" validate:"required"`
+			Sale        int    `json:"sale" validate:"required"`
+			Size        string `json:"size" validate:"required"`
+			TotalPrice  int    `json:"total_price" validate:"required"`
+			NmID        int    `json:"nm_id" validate:"required"`
+			Brand       string `json:"brand" validate:"required"`
+			Status      int    `json:"status" validate:"required"`
+		} `json:"items" validate:"required"`
+		Locale            string    `json:"locale" validate:"required"`
+		InternalSignature string    `json:"internal_signature" validate:"required"`
+		CustomerID        string    `json:"customer_id" validate:"required"`
+		DeliveryService   string    `json:"delivery_service" validate:"required"`
+		Shardkey          string    `json:"shardkey" validate:"required"`
+		SmID              int       `json:"sm_id" validate:"required,numeric"`
+		DateCreated       time.Time `json:"date_created" validate:"required"`
+		OofShard          string    `json:"oof_shard" validate:"required"`
 	}
 }
 
-func NewModel(js []byte) *Model {
-	var model Model
-	err := json.Unmarshal(js, &model.Json)
+func (m *Model) Validate() error {
+
+	err := validation.Validate(m.Json, is.JSON)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
-	return &Model{model.Json.OrderUID, model.Json}
+
+	return validation.ValidateStruct(m.Json,
+		validation.Field(&m.Json.OrderUID, validation.Required),
+		validation.Field(&m.Json.CustomerID, validation.Required),
+		validation.Field(&m.Json.DateCreated, validation.Required),
+	)
+}
+
+func NewModel(js []byte) (*Model, error) {
+	var model Model
+	err := model.Validate()
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(js, &model.Json)
+	if err != nil {
+		return nil, err
+	}
+	return &Model{model.Json.OrderUID, model.Json}, nil
 }
