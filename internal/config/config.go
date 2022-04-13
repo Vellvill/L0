@@ -10,6 +10,11 @@ type Config struct {
 		Dsn            string `yaml:"dsn"`
 		MigrationsPath string `yaml:"migrations_path"`
 	} `yaml:"db"`
+	Nats struct {
+		Channel   string `yaml:"nats_channel"`
+		ClusterID string `yaml:"cluster_id"`
+		ClientID  string `yaml:"client_id"`
+	} `yaml:"nats"`
 }
 
 func GetConfig() (*Config, error) {

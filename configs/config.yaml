@@ -3,3 +3,7 @@ server:
 db:
   dsn: "postgresql://postgres:12345@localhost:5432/L0"
   migrations_path: "./internal/postgres/migrates"
+nats:
+  nats_channel: "channel"
+  cluster_id: "prod"
+  client_id: "application"

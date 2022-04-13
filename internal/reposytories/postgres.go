@@ -8,42 +8,22 @@ import (
 	"fmt"
 	pgconn "github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"log"
-	"sync"
 )
 
 type repositoryPostgres struct {
 	client *pgxpool.Pool
-	Hash   Hash
+	Hash   *Hash
 }
-
-type Hash struct {
-	sync.Mutex
-	hash map[string][]byte
-}
-
-var Once sync.Once
 
 func NewRepository(client *pgxpool.Pool) (usecases.Repository, error) {
-	repo := &repositoryPostgres{
+	repoDB := &repositoryPostgres{
 		client: client,
-		Hash: struct {
-			sync.Mutex
-			hash map[string][]byte
-		}{hash: make(map[string][]byte)},
+		Hash:   NewHash(),
 	}
-	Once.Do(func() {
-		err := repo.UpdateHash(context.Background())
-		if err != nil {
-			log.Println(err)
-		}
-	})
-
-	return repo, nil
+	return repoDB, nil
 }
 
 func (r *repositoryPostgres) AddModel(ctx context.Context, model *model.Model, uuid string) error {
-
 	q := `
 	INSERT INTO models
 	(id, model)
@@ -52,7 +32,12 @@ func (r *repositoryPostgres) AddModel(ctx context.Context, model *model.Model, u
 	returning id 
 `
 
-	if err := r.client.QueryRow(context.Background(), q, model.OrderUID, model.Json).Scan(); err != nil {
+	send, err := json.Marshal(model.Json)
+	if err != nil {
+		return err
+	}
+
+	if err := r.client.QueryRow(context.Background(), q, model.OrderUID, send).Scan(&model.OrderUID); err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok {
 			newErr := fmt.Errorf(fmt.Sprintf(
 				"SQL Error: %s, Detail: %s, Where: %s, SQLState: %s", pgErr.Message, pgErr.Detail, pgErr.Where, pgErr.SQLState()))
@@ -76,6 +61,8 @@ func (r *repositoryPostgres) UpdateHash(ctx context.Context) (err error) {
 		return err
 	}
 
+	array := make([]model.Model, 0)
+
 	for rows.Next() {
 		var models model.Model
 
@@ -84,45 +71,17 @@ func (r *repositoryPostgres) UpdateHash(ctx context.Context) (err error) {
 			return err
 		}
 
-		go func() {
-			err := r.Hash.UpdateHash()
-			if err != nil {
-				log.Println(err)
-			}
-		}()
+		array = append(array, models)
 	}
+
+	r.Hash.UpdateHash(array)
 	return nil
 }
 
-func (h *Hash) AddModelHash(model model.Model, uuid string) (err error) {
-	if _, ok := h.hash[uuid]; ok {
-		return nil
-	}
-	h.Lock()
-	h.hash[uuid], err = json.Marshal(model.Json)
+func (r *repositoryPostgres) FindInHash(uuid string) ([]byte, error) {
+	js, err := r.Hash.FindById(uuid)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	h.Unlock()
-	return nil
-}
-
-func (h *Hash) UpdateHash(models ...model.Model) (err error) {
-	go func() {
-		wg := new(sync.WaitGroup)
-		wg.Add(len(models))
-		go func() {
-			for _, v := range models {
-				h.Lock()
-				h.hash[v.OrderUID], err = json.Marshal(v.Json)
-				if err != nil {
-					log.Println(err)
-				}
-				h.Unlock()
-				wg.Done()
-			}
-		}()
-		wg.Wait()
-	}()
-	return nil
+	return js, nil
 }

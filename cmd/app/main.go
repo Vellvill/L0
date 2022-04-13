@@ -31,7 +31,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = app.Start()
+	err = app.Start(context.Background())
 	if err != nil {
 		log.Fatal(err)
 	}
