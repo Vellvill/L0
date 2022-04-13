@@ -79,6 +79,9 @@ func (r *repositoryPostgres) UpdateHash(ctx context.Context) (err error) {
 
 		array = append(array, models)
 	}
+	if len(array) == 0 {
+		return fmt.Errorf("HASH: Empty table\n")
+	}
 
 	err = r.Hash.UpdateHash(array)
 	if err != nil {

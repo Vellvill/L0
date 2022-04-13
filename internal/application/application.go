@@ -76,12 +76,10 @@ func (a *Application) Start(ctx context.Context) error {
 					log.Println(err)
 				}
 			default:
-				time.Sleep(10 * time.Second)
+				time.Sleep(1 * time.Second)
 			}
 		}
 	}()
-	defer a.connection.Close()
-	defer sc.Close()
 	return http.ListenAndServe(fmt.Sprintf(":%s", a.config.Server.Port), a.router)
 }
 
@@ -102,5 +100,4 @@ func (a *Application) FindById(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(data)
-
 }
