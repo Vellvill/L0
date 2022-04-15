@@ -1,0 +1,49 @@
+{
+  "order_uid": "1113test",
+  "track_number": "Track",
+  "entry": "Entry",
+  "delivery": {
+    "name": "Ivan Ivanov",
+    "phone": "+700044455566",
+    "zip": "11223333",
+    "city": "Moscow",
+    "address": "Sovetskaya 15",
+    "region": "Moscow",
+    "email": "model@example.org"
+  },
+  "payment": {
+    "transaction": "testtest",
+    "request_id": "testset",
+    "currency": "testset",
+    "provider": "testset",
+    "amount": 9999,
+    "payment_dt": 1112223334,
+    "bank": "alpha",
+    "delivery_cost": 99999,
+    "goods_total": 3,
+    "custom_fee": 0
+  },
+  "items": [
+    {
+      "chrt_id": 9999999,
+      "track_number": "tracktest",
+      "price": 5555,
+      "rid": "111111ridtest",
+      "name": "Fedor",
+      "sale": 30,
+      "size": "111",
+      "total_price": 500,
+      "nm_id": 111122223333,
+      "brand": "Gucci",
+      "status": 100
+    }
+  ],
+  "locale": "test",
+  "internal_signature": "",
+  "customer_id": "testtestid",
+  "delivery_service": "delivery",
+  "shardkey": "99",
+  "sm_id": 999,
+  "date_created": "2020-10-24T07:00:14Z",
+  "oof_shard": "6"
+}

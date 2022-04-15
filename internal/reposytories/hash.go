@@ -36,18 +36,19 @@ func (h *Hash) AddModelHash(model model.Model) (err error) {
 func (h *Hash) UpdateHash(models []model.Model) (err error) {
 	wg := new(sync.WaitGroup)
 	wg.Add(len(models))
-	go func() {
-		for _, v := range models {
+	for _, v := range models {
+		go func(v model.Model) {
+			defer wg.Done()
 			h.mu.Lock()
 			h.Hash[v.OrderUID], err = json.Marshal(v.Json)
 			if err != nil {
 				log.Println(err)
 			}
 			h.mu.Unlock()
-			wg.Done()
-		}
-	}()
+		}(v)
+	}
 	wg.Wait()
+	log.Printf("Data successfully loaded into the cache, data len = %d\n", len(models))
 	return nil
 }
 
